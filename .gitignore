@@ -1,0 +1,20 @@
+# секреты и локальные конфиги
+config.json
+auth.json
+*.pem
+*.key
+*.token
+
+# данные и окружение
+data/
+gen-test/
+venv/
+.venv/
+__pycache__/
+*.pyc
+models/
+*.log
+*.tar.gz
+*.sqlite3
+Outbox/
+*.bak*

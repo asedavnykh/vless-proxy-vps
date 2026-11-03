@@ -1,0 +1,33 @@
+# Шаблон конфигурации telemt.
+# Инсталлятор подставляет __PUBLIC_HOST__, __PUBLIC_PORT__, __TLS_DOMAIN__.
+
+[general]
+use_middle_proxy = true
+log_level = "normal"
+
+[general.modes]
+classic = false
+secure = false
+tls = true
+
+[general.links]
+show = "*"
+public_host = "__PUBLIC_HOST__"
+public_port = __PUBLIC_PORT__
+
+[server]
+port = 443
+
+[server.api]
+enabled = true
+listen = "0.0.0.0:9091"
+whitelist = ["127.0.0.1/32", "::1/128", "172.17.0.0/16"]
+auth_header = ""
+minimal_runtime_enabled = true
+minimal_runtime_cache_ttl_ms = 1000
+
+[[server.listeners]]
+ip = "0.0.0.0"
+
+[censorship]
+tls_domain = "__TLS_DOMAIN__"

@@ -1,0 +1,33 @@
+services:
+  telemt:
+    image: ghcr.io/telemt/telemt:3.5.7
+    container_name: telemt
+    restart: unless-stopped
+    network_mode: bridge
+    ports:
+      - "__TELEMT_PORT__:443"
+      - "127.0.0.1:9091:9091"
+    working_dir: /run/telemt
+    command: ["/etc/telemt/config.toml"]
+    volumes:
+      - ./config:/etc/telemt:rw
+    tmpfs:
+      - /run/telemt:rw,mode=1777,size=4m
+    environment:
+      - RUST_LOG=warn
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"

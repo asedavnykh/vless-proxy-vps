@@ -1,0 +1,20 @@
+[Unit]
+Description=Telemt Web Monitor and Control
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=__PANEL_HOME__
+EnvironmentFile=__PANEL_HOME__/.env
+ExecStart=/usr/bin/python3 __PANEL_HOME__/server.py
+Restart=always
+RestartSec=3
+
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
