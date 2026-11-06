@@ -157,6 +157,7 @@ cfg = {
                 "serverNames": [os.environ["REALITY_SNI"]],
                 "privateKey": os.environ["XRAY_PRIV"],
                 "shortIds": [os.environ["XRAY_SID"]],
+                "minClientVer": "0.0.0",
             },
         },
         "tag": os.environ["XRAY_TAG"],
@@ -250,6 +251,7 @@ EOF
 install_deps() {
   step "Установка компонентов"
   export DEBIAN_FRONTEND=noninteractive
+  XRAY_VER="${XRAY_VER:-v26.7.28}"
   apt-get update -qq
   apt-get install -y -qq curl ca-certificates python3 openssl
 
@@ -260,9 +262,22 @@ install_deps() {
   docker info >/dev/null 2>&1 || die "Docker не запустился"
   info "Docker: $(docker --version | head -1)"
 
-  if ! command -v xray >/dev/null 2>&1; then
-    info "Установка xray..."
-    bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
+  if ! command -v xray >/dev/null 2>&1 || \
+     [ "$(xray version 2>/dev/null | head -1 | awk '{print $2}')" != "${XRAY_VER#v}" ]; then
+    # Xray закреплён на XRAY_VER: версии >= 26.9.8 требуют в ClientHello
+    # X25519MLKEM768 и не принимают клиентов sing-box (sing-box issue #4520).
+    info "Установка Xray $XRAY_VER (закреплённая версия)..."
+    tmp="$(mktemp -d)"
+    curl -fsSL -o "$tmp/xray.zip" \
+      "https://github.com/XTLS/Xray-core/releases/download/$XRAY_VER/Xray-linux-64.zip"
+    curl -fsSL -o "$tmp/xray.zip.dgst" \
+      "https://github.com/XTLS/Xray-core/releases/download/$XRAY_VER/Xray-linux-64.zip.dgst"
+    sha="$(grep 'SHA2-256' "$tmp/xray.zip.dgst" | awk '{print $NF}' | tr 'A-Z' 'a-z')"
+    calc="$(sha256sum "$tmp/xray.zip" | awk '{print $1}')"
+    [ "$sha" = "$calc" ] || die "Контрольная сумма архива Xray не совпала"
+    unzip -o -q "$tmp/xray.zip" xray -d "$tmp"
+    install -m 755 "$tmp/xray" /usr/local/bin/xray
+    rm -rf "$tmp"
   fi
   info "Xray: $(xray version 2>/dev/null | head -1)"
   systemctl daemon-reload

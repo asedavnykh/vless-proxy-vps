@@ -29,7 +29,8 @@
           "privateKey": "<X25519_PRIVATE_KEY>",
           "shortIds": [
             "<SHORT_ID_HEX>"
-          ]
+          ],
+          "minClientVer": "0.0.0"
         }
       },
       "tag": "vless-8443",
