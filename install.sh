@@ -253,11 +253,14 @@ install_deps() {
   export DEBIAN_FRONTEND=noninteractive
   XRAY_VER="${XRAY_VER:-v26.7.28}"
   apt-get update -qq
-  apt-get install -y -qq curl ca-certificates python3 openssl
+  apt-get install -y -qq curl ca-certificates python3 openssl unzip
 
   if ! command -v docker >/dev/null 2>&1; then
     info "Установка Docker..."
-    curl -fsSL https://get.docker.com | sh
+    curl -fsSL --max-time 180 https://get.docker.com | sh || {
+      info "get.docker.com недоступен (таймаут) — ставим docker.io из репозитория"
+      apt-get install -y -qq docker.io
+    }
   fi
   docker info >/dev/null 2>&1 || die "Docker не запустился"
   info "Docker: $(docker --version | head -1)"
